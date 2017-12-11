@@ -155,11 +155,6 @@ class Captcha
     protected $invert = false;
 
     /**
-     * @var bool
-     */
-    protected $sensitive = false;
-
-    /**
      * Constructor
      *
      * @param Filesystem $files
@@ -296,11 +291,7 @@ class Captcha
             $bag .= $characters[rand(0, count($characters) - 1)];
         }
 
-        $this->session->put('captcha', [
-            'sensitive' => $this->sensitive,
-            'key'       => $this->hasher->make($this->sensitive ? $bag : $this->str->lower($bag))
-        ]);
-
+        $this->session->put('captcha', $this->hasher->make($this->str->lower($bag)));
         return $bag;
     }
 
@@ -413,12 +404,8 @@ class Captcha
             return false;
         }
 
-        $key = $this->session->get('captcha.key');
-
-        if ( ! $this->session->get('captcha.sensitive'))
-        {
-            $value = $this->str->lower($value);
-        }
+        $key = $this->session->get('captcha');
+        $value = $this->str->lower($value);
 
         $this->session->remove('captcha');
 
