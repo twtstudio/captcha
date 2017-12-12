@@ -4,13 +4,13 @@ return [
 
     'characters' => '2346789abcdefghjmnpqrtuxyzABCDEFGHJMNPQRTUXYZ',
 
-    'default'   => [
+    'style'   => [
         'length'    => 5,
         'width'     => 120,
         'height'    => 36,
         'quality'   => 90,
     ],
-
+    /*
     'flat'   => [
         'length'    => 6,
         'width'     => 160,
@@ -40,5 +40,5 @@ return [
         'invert'    => true,
         'contrast'  => -5,
     ]
-
+    */
 ];

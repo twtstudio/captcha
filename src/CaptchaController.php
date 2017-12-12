@@ -15,12 +15,12 @@ class CaptchaController extends Controller
      * get CAPTCHA
      *
      * @param \Mews\Captcha\Captcha $captcha
-     * @param string $config
+     * @param string $key
      * @return \Intervention\Image\ImageManager->response
      */
-    public function getCaptcha(Captcha $captcha, $config = 'default')
+    public function getCaptcha(Captcha $captcha, $key = 'default')
     {
-        return $captcha->create($config);
+        return $captcha->create($key);
     }
 
 }

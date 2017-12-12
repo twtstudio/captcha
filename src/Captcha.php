@@ -182,17 +182,10 @@ class Captcha
         $this->hasher = $hasher;
         $this->str = $str;
         $this->characters = config('captcha.characters','2346789abcdefghjmnpqrtuxyzABCDEFGHJMNPQRTUXYZ');
-    }
 
-    /**
-     * @param string $config
-     * @return void
-     */
-    protected function configure($config)
-    {
-        if ($this->config->has('captcha.' . $config))
+        if ($this->config->has('captcha.style'))
         {
-            foreach($this->config->get('captcha.' . $config) as $key => $val)
+            foreach($this->config->get('captcha.style') as $key => $val)
             {
                 $this->{$key} = $val;
             }
@@ -202,11 +195,14 @@ class Captcha
     /**
      * Create captcha image
      *
-     * @param string $config
+     * @param string $key
      * @return ImageManager->response
      */
-    public function create($config = 'default')
-    {
+    public function create($key = 'default') {
+        if (!$this->session->has('captcha.' . $key)) {
+            return 'Forbidden';
+        }
+
         $this->backgrounds = $this->files->files(__DIR__ . '/../assets/backgrounds');
         $this->fonts = $this->files->files(__DIR__ . '/../assets/fonts');
         
@@ -217,10 +213,7 @@ class Captcha
         }
         
         $this->fonts = array_values($this->fonts); //reset fonts array index
-
-        $this->configure($config);
-
-        $this->text = $this->generate();
+        $this->text = $this->generate($key);
 
         $this->canvas = $this->imageManager->canvas(
             $this->width,
@@ -228,21 +221,17 @@ class Captcha
             $this->bgColor
         );
 
-        if ($this->bgImage)
-        {
+        if ($this->bgImage) {
             $this->image = $this->imageManager->make($this->background())->resize(
                 $this->width,
                 $this->height
             );
             $this->canvas->insert($this->image);
-        }
-        else
-        {
+        } else {
             $this->image = $this->canvas;
         }
 
-        if ($this->contrast != 0)
-        {
+        if ($this->contrast != 0) {
             $this->image->contrast($this->contrast);
         }
 
@@ -250,16 +239,13 @@ class Captcha
 
         $this->lines();
 
-        if ($this->sharpen)
-        {
+        if ($this->sharpen) {
             $this->image->sharpen($this->sharpen);
         }
-        if ($this->invert)
-        {
+        if ($this->invert) {
             $this->image->invert($this->invert);
         }
-        if ($this->blur)
-        {
+        if ($this->blur) {
             $this->image->blur($this->blur);
         }
 
@@ -281,30 +267,26 @@ class Captcha
      *
      * @return string
      */
-    protected function generate()
-    {
+    protected function generate($key) {
         $characters = str_split($this->characters);
 
         $bag = '';
-        for($i = 0; $i < $this->length; $i++)
-        {
+        for($i = 0; $i < $this->length; $i++) {
             $bag .= $characters[rand(0, count($characters) - 1)];
         }
 
-        $this->session->put('captcha', $this->hasher->make($this->str->lower($bag)));
+        $this->session->put('captcha.' . $key, $this->hasher->make($this->str->lower($bag)));
         return $bag;
     }
 
     /**
      * Writing captcha text
      */
-    protected function text()
-    {
+    protected function text() {
         $marginTop = $this->image->height() / $this->length;
 
         $i = 0;
-        foreach(str_split($this->text) as $char)
-        {
+        foreach(str_split($this->text) as $char) {
             $marginLeft = ($i * $this->image->width() / $this->length);
 
             $this->image->text($char, $marginLeft, $marginTop, function($font) {
@@ -391,47 +373,54 @@ class Captcha
         return $this->image;
     }
 
+    public function enable($key) {
+        $this->session->put('captcha.' . $key, 'empty');
+    }
+
     /**
      * Captcha check
      *
+     * @param $key
      * @param $value
      * @return bool
      */
-    public function check($value)
-    {
-        if ( ! $this->session->has('captcha'))
-        {
+    public function check($key, $value) {
+        $key = 'captcha.' . $key;
+
+        if ( ! $this->session->has($key)) {
             return false;
         }
 
-        $key = $this->session->get('captcha');
+        $hash = $this->session->get($key);
+        if ($hash == 'empty') return false;
+
         $value = $this->str->lower($value);
 
-        $this->session->remove('captcha');
+        $this->session->put($key, 'empty');
 
-        return $this->hasher->check($value, $key);
+        return $this->hasher->check($value, $hash);
     }
 
     /**
      * Generate captcha image source
      *
-     * @param null $config
+     * @param null $key
      * @return string
      */
-    public function src($config = null)
+    public function src($key = null)
     {
-        return url('captcha' . ($config ? '/' . $config : '/default')) . '?' . $this->str->random(8);
+        return url('captcha' . ($key ? '/' . $key : '/default')) . '?' . $this->str->random(8);
     }
 
     /**
      * Generate captcha image html tag
      *
-     * @param null $config
+     * @param null $key
      * @return string
      */
-    public function img($config = null)
+    public function img($key = null)
     {
-        return '<img src="' . $this->src($config) . '" alt="captcha">';
+        return '<img src="' . $this->src($key) . '" alt="captcha">';
     }
 
 }

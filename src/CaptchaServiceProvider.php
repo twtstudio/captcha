@@ -24,20 +24,22 @@ class CaptchaServiceProvider extends ServiceProvider {
 
         // HTTP routing
         if (strpos($this->app->version(), 'Lumen') !== false) {
-           $this->app->get('captcha[/{config}]', 'Mews\Captcha\LumenCaptchaController@getCaptcha');
+           $this->app->get('captcha[/{key}]', 'Mews\Captcha\LumenCaptchaController@getCaptcha');
         } else {
             if ((double) $this->app->version() >= 5.2) {
-                $this->app['router']->get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha')->middleware('web');
+                $this->app['router']->get('captcha/{key?}', '\Mews\Captcha\CaptchaController@getCaptcha')->middleware('web');
             } else {
-                $this->app['router']->get('captcha/{config?}', '\Mews\Captcha\CaptchaController@getCaptcha');
+                $this->app['router']->get('captcha/{key?}', '\Mews\Captcha\CaptchaController@getCaptcha');
             }
         }
 
         // Validator extensions
+        /*
         $this->app['validator']->extend('captcha', function($attribute, $value, $parameters)
         {
             return captcha_check($value);
         });
+        */
     }
 
     /**
