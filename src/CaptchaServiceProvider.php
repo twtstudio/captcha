@@ -1,12 +1,12 @@
 <?php
 
-namespace Mews\Captcha;
+namespace TwT\Captcha;
 
 use Illuminate\Support\ServiceProvider;
 
 /**
  * Class CaptchaServiceProvider
- * @package Mews\Captcha
+ * @package TwT\Captcha
  */
 class CaptchaServiceProvider extends ServiceProvider {
 
@@ -24,12 +24,12 @@ class CaptchaServiceProvider extends ServiceProvider {
 
         // HTTP routing
         if (strpos($this->app->version(), 'Lumen') !== false) {
-           $this->app->get('captcha[/{key}]', 'Mews\Captcha\LumenCaptchaController@getCaptcha');
+           $this->app->get('captcha[/{key}]', 'TwT\Captcha\LumenCaptchaController@getCaptcha');
         } else {
             if ((double) $this->app->version() >= 5.2) {
-                $this->app['router']->get('captcha/{key?}', '\Mews\Captcha\CaptchaController@getCaptcha')->middleware('web');
+                $this->app['router']->get('captcha/{key?}', '\TwT\Captcha\CaptchaController@getCaptcha')->middleware('web');
             } else {
-                $this->app['router']->get('captcha/{key?}', '\Mews\Captcha\CaptchaController@getCaptcha');
+                $this->app['router']->get('captcha/{key?}', '\TwT\Captcha\CaptchaController@getCaptcha');
             }
         }
 
